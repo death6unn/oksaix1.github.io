@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магический Шар Предсказаний</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .magic-ball {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at 30% 30%, #333, #000);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border: 8px solid #fff;
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.1),
+                        inset 0 0 50px rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .magic-ball:hover {
+            transform: scale(1.05);
+        }
+
+        .magic-ball:active {
+            transform: scale(0.95);
+        }
+
+        .answer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .question-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 16px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .question-input::placeholder {
+            color: #ccc;
+        }
+
+        .record-btn {
+            background: linear-gradient(45deg, #fff, #e0e0e0);
+            color: #000;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .record-btn:hover {
+            background: linear-gradient(45deg, #e0e0e0, #fff);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .record-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .controls {
+            margin: 20px 0;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.6); }
+            100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+        }
+
+        .shaking {
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .instructions {
+            margin-top: 30px;
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .recording {
+            background: linear-gradient(45deg, #ff4444, #ff6666) !important;
+            animation: recordingPulse 1s infinite;
+        }
+
+        @keyframes recordingPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Магический Шар Предсказаний</h1>
+        
+        <div class="magic-ball pulse" id="magicBall">
+            <div class="answer" id="answer">
+                Задайте вопрос и коснитесь шара...
+            </div>
+        </div>
+
+        <input type="text" class="question-input" id="questionInput" 
+               placeholder="Запишите ваш вопрос голосом или введите текст...">
+
+        <div class="controls">
+            <button class="record-btn" id="recordBtn">
+                🎤 Записать вопрос
+            </button>
+            <button class="record-btn" id="getAnswerBtn">
+                🔮 Получить ответ
+            </button>
+        </div>
+
+        <div class="instructions">
+            <p>1. Нажмите "Записать вопрос" и задайте вопрос голосом</p>
+            <p>2. Или введите вопрос в текстовое поле</p>
+            <p>3. Коснитесь магического шара для получения предсказания</p>
+        </div>
+    </div>
+
+    <script>
+        // Фразы для ответов (замените на свои голосовые фразы)
+        const predictions = [
+            "Безусловно, да",
+            "Знаки говорят - да",
+            "Без сомнений",
+            "Определённо yes",
+            "Можешь быть уверен",
+            "По моим данным - yes",
+            "Вероятнее всего",
+            "Перспективы хорошие",
+            "Да",
+            "Знаки положительные",
+            "Пока не ясно, спроси снова",
+            "Спроси позже",
+            "Лучше не рассказывать",
+            "Сейчас нельзя предсказать",
+            "Сконцентрируйся и спроси опять",
+            "Даже не думай",
+            "Мой ответ - no",
+            "Перспективы не очень",
+            "Весьма сомнительно",
+            "Знаки говорят - нет"
+        ];
+
+        const magicBall = document.getElementById('magicBall');
+        const answer = document.getElementById('answer');
+        const questionInput = document.getElementById('questionInput');
+        const recordBtn = document.getElementById('recordBtn');
+        const getAnswerBtn = document.getElementById('getAnswerBtn');
+
+        let isRecording = false;
+        let recognition = null;
+
+        // Проверяем поддержку Web Speech API
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'ru-RU';
+
+            recognition.onstart = function() {
+                isRecording = true;
+                recordBtn.classList.add('recording');
+                recordBtn.textContent = '🔴 Запись...';
+                questionInput.placeholder = "Говорите сейчас...";
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                questionInput.value = transcript;
+            };
+
+            recognition.onend = function() {
+                isRecording = false;
+                recordBtn.classList.remove('recording');
+                recordBtn.textContent = '🎤 Записать вопрос';
+                questionInput.placeholder = "Запишите ваш вопрос голосом или введите текст...";
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Ошибка распознавания:', event.error);
+                isRecording = false;
+                recordBtn.classList.remove('recording');
+                recordBtn.textContent = '🎤 Записать вопрос';
+            };
+        } else {
+            recordBtn.disabled = true;
+            recordBtn.textContent = '🎤 Запись не поддерживается';
+        }
+
+        // Запись голоса
+        recordBtn.addEventListener('click', function() {
+            if (!recognition) return;
+            
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                try {
+                    recognition.start();
+                } catch (error) {
+                    console.error('Ошибка начала записи:', error);
+                }
+            }
+        });
+
+        // Получение ответа
+        function getAnswer() {
+            const question = questionInput.value.trim();
+            
+            if (!question) {
+                answer.textContent = "Сначала задайте вопрос!";
+                return;
+            }
+
+            // Анимация шара
+            magicBall.classList.remove('pulse');
+            magicBall.classList.add('shaking');
+            answer.textContent = "Шар думает...";
+
+            // Рандомный ответ после задержки
+            setTimeout(() => {
+                const randomIndex = Math.floor(Math.random() * predictions.length);
+                const prediction = predictions[randomIndex];
+                
+                answer.textContent = prediction;
+                magicBall.classList.remove('shaking');
+                magicBall.classList.add('pulse');
+
+                // Можно добавить воспроизведение ваших голосовых фраз здесь
+                // Например: playVoiceMessage(prediction);
+            }, 2000);
+        }
+
+        // Обработчики событий
+        magicBall.addEventListener('click', getAnswer);
+        getAnswerBtn.addEventListener('click', getAnswer);
+
+        // Enter для ввода вопроса
+        questionInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getAnswer();
+            }
+        });
+
+        // Функция для воспроизведения голосовых сообщений (добавьте свои файлы)
+        function playVoiceMessage(message) {
+            // Здесь можно добавить логику воспроизведения ваших голосовых файлов
+            // Например: 
+            // const audio = new Audio(`voices/${message}.mp3`);
+            // audio.play();
+        }
+    </script>
+</body>
+</html>
